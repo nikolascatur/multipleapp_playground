@@ -1,4 +1,4 @@
-# Tamagui + Solito + Next + Expo Monorepo
+# Tamagui + Solito + Next + XState + Axios + React Navigation + Expo Monorepo
 
 ```sh
 npx create-tamagui-app@latest myapp
