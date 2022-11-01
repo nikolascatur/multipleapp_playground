@@ -22,7 +22,6 @@ function MyApp({ Component, pageProps }: SolitoAppProps) {
   return (
     <>
       <RequestProvider
-        nextUrl=""
         baseUrl=""
         getToken={getToken}
         setToken={async ({ refreshToken, token }) => {
