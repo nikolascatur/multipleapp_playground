@@ -30,10 +30,41 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../node_modules/tamagui/dist/cjs/polyfills.js
-var require_polyfills = __commonJS({
-  "../../node_modules/tamagui/dist/cjs/polyfills.js"() {
+// ../../node_modules/tamagui/dist/cjs/setup.js
+var require_setup = __commonJS({
+  "../../node_modules/tamagui/dist/cjs/setup.js"(exports, module2) {
     "use strict";
+    var __defProp2 = Object.defineProperty;
+    var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
+    var __getOwnPropNames2 = Object.getOwnPropertyNames;
+    var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+    var __export2 = /* @__PURE__ */ __name((target, all) => {
+      for (var name in all)
+        __defProp2(target, name, { get: all[name], enumerable: true });
+    }, "__export");
+    var __copyProps2 = /* @__PURE__ */ __name((to, from, except, desc) => {
+      if (from && typeof from === "object" || typeof from === "function") {
+        for (let key of __getOwnPropNames2(from))
+          if (!__hasOwnProp2.call(to, key) && key !== except)
+            __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc2(from, key)) || desc.enumerable });
+      }
+      return to;
+    }, "__copyProps");
+    var __toCommonJS2 = /* @__PURE__ */ __name((mod) => __copyProps2(__defProp2({}, "__esModule", { value: true }), mod), "__toCommonJS");
+    var setup_exports = {};
+    __export2(setup_exports, {
+      idFn: () => idFn
+    });
+    module2.exports = __toCommonJS2(setup_exports);
+    var import_core4 = require("@tamagui/core-node");
+    var import_react_native3 = require("react-native-web-lite");
+    (0, import_core4.setupReactNative)({
+      Image: import_react_native3.Image,
+      View: import_react_native3.View,
+      Text: import_react_native3.Text,
+      TextInput: import_react_native3.TextInput,
+      ScrollView: import_react_native3.ScrollView
+    });
     if (typeof requestAnimationFrame === "undefined") {
       globalThis["requestAnimationFrame"] = setImmediate;
     }
@@ -43,6 +74,8 @@ var require_polyfills = __commonJS({
       } catch {
       }
     };
+    var idFn = /* @__PURE__ */ __name(() => {
+    }, "idFn");
   }
 });
 
@@ -727,6 +760,7 @@ var require_es5 = __commonJS({
   "../../node_modules/aria-hidden/dist/es5/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.suppressOthers = exports.supportsInert = exports.inertOthers = exports.hideOthers = void 0;
     var getDefaultParent = /* @__PURE__ */ __name(function(originalTarget) {
       if (typeof document === "undefined") {
         return null;
@@ -738,13 +772,7 @@ var require_es5 = __commonJS({
     var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
     var markerMap = {};
     var lockCount = 0;
-    exports.hideOthers = function(originalTarget, parentNode, markerName) {
-      if (parentNode === void 0) {
-        parentNode = getDefaultParent(originalTarget);
-      }
-      if (markerName === void 0) {
-        markerName = "data-aria-hidden";
-      }
+    var applyAttributeToOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName, controlAttribute) {
       var targets = Array.isArray(originalTarget) ? originalTarget : [originalTarget];
       if (!markerMap[markerName]) {
         markerMap[markerName] = /* @__PURE__ */ new WeakMap();
@@ -752,6 +780,7 @@ var require_es5 = __commonJS({
       var markerCounter = markerMap[markerName];
       var hiddenNodes = [];
       var elementsToKeep = /* @__PURE__ */ new Set();
+      var elementsToStop = new Set(targets);
       var keep = /* @__PURE__ */ __name(function(el) {
         if (!el || elementsToKeep.has(el)) {
           return;
@@ -761,14 +790,14 @@ var require_es5 = __commonJS({
       }, "keep");
       targets.forEach(keep);
       var deep = /* @__PURE__ */ __name(function(parent) {
-        if (!parent || targets.indexOf(parent) >= 0) {
+        if (!parent || elementsToStop.has(parent)) {
           return;
         }
         Array.prototype.forEach.call(parent.children, function(node) {
           if (elementsToKeep.has(node)) {
             deep(node);
           } else {
-            var attr = node.getAttribute("aria-hidden");
+            var attr = node.getAttribute(controlAttribute);
             var alreadyHidden = attr !== null && attr !== "false";
             var counterValue = (counterMap.get(node) || 0) + 1;
             var markerValue = (markerCounter.get(node) || 0) + 1;
@@ -782,7 +811,7 @@ var require_es5 = __commonJS({
               node.setAttribute(markerName, "true");
             }
             if (!alreadyHidden) {
-              node.setAttribute("aria-hidden", "true");
+              node.setAttribute(controlAttribute, "true");
             }
           }
         });
@@ -798,7 +827,7 @@ var require_es5 = __commonJS({
           markerCounter.set(node, markerValue);
           if (!counterValue) {
             if (!uncontrolledNodes.has(node)) {
-              node.removeAttribute("aria-hidden");
+              node.removeAttribute(controlAttribute);
             }
             uncontrolledNodes.delete(node);
           }
@@ -814,7 +843,46 @@ var require_es5 = __commonJS({
           markerMap = {};
         }
       };
-    };
+    }, "applyAttributeToOthers");
+    var hideOthers2 = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-aria-hidden";
+      }
+      var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+      var activeParentNode = parentNode || getDefaultParent(originalTarget);
+      if (!activeParentNode) {
+        return function() {
+          return null;
+        };
+      }
+      targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live]")));
+      return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
+    }, "hideOthers");
+    exports.hideOthers = hideOthers2;
+    var inertOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-inert-ed";
+      }
+      var activeParentNode = parentNode || getDefaultParent(originalTarget);
+      if (!activeParentNode) {
+        return function() {
+          return null;
+        };
+      }
+      return applyAttributeToOthers(originalTarget, activeParentNode, markerName, "inert");
+    }, "inertOthers");
+    exports.inertOthers = inertOthers;
+    var supportsInert = /* @__PURE__ */ __name(function() {
+      return typeof HTMLElement !== "undefined" && HTMLElement.prototype.hasOwnProperty("inert");
+    }, "supportsInert");
+    exports.supportsInert = supportsInert;
+    var suppressOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-suppressed";
+      }
+      return ((0, exports.supportsInert)() ? exports.inertOthers : exports.hideOthers)(originalTarget, parentNode, markerName);
+    }, "suppressOthers");
+    exports.suppressOthers = suppressOthers;
   }
 });
 
@@ -2541,7 +2609,7 @@ var require_tslib = __commonJS({
         function step(op) {
           if (f)
             throw new TypeError("Generator is already executing.");
-          while (_)
+          while (g && (g = 0, op[0] && (_ = 0)), _)
             try {
               if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done)
                 return t;
@@ -3657,11 +3725,6 @@ var require_utils = __commonJS({
     }, "parse");
     var getOffset = /* @__PURE__ */ __name(function(gapMode) {
       var cs = window.getComputedStyle(document.body);
-      if (process.env.NODE_ENV !== "production") {
-        if (cs.overflowY === "hidden") {
-          console.error("react-remove-scroll-bar: cannot calculate scrollbar size because it is removed (overflow:hidden on body");
-        }
-      }
       var left = cs[gapMode === "padding" ? "paddingLeft" : "marginLeft"];
       var top = cs[gapMode === "padding" ? "paddingTop" : "marginTop"];
       var right = cs[gapMode === "padding" ? "paddingRight" : "marginRight"];
@@ -4386,9 +4449,15 @@ var require_ScrollView = __commonJS({
     module2.exports = __toCommonJS2(ScrollView_exports);
     var import_core4 = require("@tamagui/core-node");
     var import_react_native3 = require("react-native-web-lite");
-    var ScrollView = (0, import_core4.styled)(import_react_native3.ScrollView, {
-      name: "ScrollView"
-    });
+    var ScrollView = (0, import_core4.styled)(
+      import_react_native3.ScrollView,
+      {
+        name: "ScrollView"
+      },
+      {
+        isReactNative: true
+      }
+    );
   }
 });
 
@@ -4887,7 +4956,6 @@ var require_Sheet = __commonJS({
                 const isScrolled = scrollBridge.y !== 0;
                 const isDraggingUp = dy < 0;
                 const isAtTop = scrollBridge.paneY <= scrollBridge.paneMinY;
-                console.log(">??");
                 if (isScrolled) {
                   previouslyScrolling = true;
                   return false;
@@ -5228,22 +5296,16 @@ var require_SizableText = __commonJS({
     module2.exports = __toCommonJS2(SizableText_exports);
     var import_core4 = require("@tamagui/core-node");
     var import_get_font_sized = require_cjs17();
-    var SizableText = (0, import_core4.styled)(
-      import_core4.Text,
-      {
-        name: "SizableText",
-        fontFamily: "$body",
-        variants: {
-          size: import_get_font_sized.getFontSized
-        },
-        defaultVariants: {
-          size: "$4"
-        }
+    var SizableText = (0, import_core4.styled)(import_core4.Text, {
+      name: "SizableText",
+      fontFamily: "$body",
+      variants: {
+        size: import_get_font_sized.getFontSized
       },
-      {
-        inlineWhenUnflattened: /* @__PURE__ */ new Set(["fontFamily"])
+      defaultVariants: {
+        size: "$4"
       }
-    );
+    });
   }
 });
 
@@ -6479,19 +6541,12 @@ var require_Image = __commonJS({
     var import_react = __toESM2(require("react"));
     var import_react_native3 = require("react-native-web-lite");
     import_react.default["createElement"];
-    var StyledImage = (0, import_core4.styled)(
-      import_react_native3.Image,
-      {
-        name: "Image",
-        position: "relative",
-        source: { uri: "" },
-        zIndex: 1
-      },
-      {
-        inlineProps: /* @__PURE__ */ new Set(["src", "width", "height"]),
-        isReactNative: true
-      }
-    );
+    var StyledImage = (0, import_core4.styled)(import_react_native3.Image, {
+      name: "Image",
+      position: "relative",
+      source: { uri: "" },
+      zIndex: 1
+    });
     var Image = StyledImage.extractable((inProps) => {
       const props = (0, import_core4.getExpandedShorthands)(inProps);
       const { src, ...rest } = props;
@@ -8030,13 +8085,14 @@ var require_focusableInputHOC = __commonJS({
               (0, import_registerFocusable.unregisterFocusable)(props.id);
             };
           }, [props.id]);
+          const onChangeText = (0, import_core4.useEvent)((value) => {
+            var _a;
+            inputValue.current = value;
+            (_a = props.onChangeText) == null ? void 0 : _a.call(props, value);
+          });
           const finalProps = isInput ? {
             ...props,
-            onChangeText(value) {
-              var _a;
-              inputValue.current = value;
-              (_a = props.onChangeText) == null ? void 0 : _a.call(props, value);
-            }
+            onChangeText
           } : props;
           return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component2, {
             ref: combinedRefs,
@@ -9503,10 +9559,10 @@ var require_floating_ui_dom_umd = __commonJS({
         return node;
       }
       __name(getWindow, "getWindow");
-      function getComputedStyle$1(element) {
+      function getComputedStyle2(element) {
         return getWindow(element).getComputedStyle(element);
       }
-      __name(getComputedStyle$1, "getComputedStyle$1");
+      __name(getComputedStyle2, "getComputedStyle");
       function getNodeName(node) {
         return isWindow(node) ? "" : node ? (node.nodeName || "").toLowerCase() : "";
       }
@@ -9543,9 +9599,10 @@ var require_floating_ui_dom_umd = __commonJS({
         const {
           overflow,
           overflowX,
-          overflowY
-        } = getComputedStyle$1(element);
-        return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX);
+          overflowY,
+          display
+        } = getComputedStyle2(element);
+        return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
       }
       __name(isOverflowElement, "isOverflowElement");
       function isTableElement(element) {
@@ -9554,14 +9611,23 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(isTableElement, "isTableElement");
       function isContainingBlock(element) {
         const isFirefox = /firefox/i.test(getUAString());
-        const css = getComputedStyle$1(element);
-        return css.transform !== "none" || css.perspective !== "none" || css.contain === "paint" || ["transform", "perspective"].includes(css.willChange) || isFirefox && css.willChange === "filter" || isFirefox && (css.filter ? css.filter !== "none" : false);
+        const css = getComputedStyle2(element);
+        return css.transform !== "none" || css.perspective !== "none" || isFirefox && css.willChange === "filter" || isFirefox && (css.filter ? css.filter !== "none" : false) || ["transform", "perspective"].some((value) => css.willChange.includes(value)) || ["paint", "layout", "strict", "content"].some(
+          (value) => {
+            const contain = css.contain;
+            return contain != null ? contain.includes(value) : false;
+          }
+        );
       }
       __name(isContainingBlock, "isContainingBlock");
       function isLayoutViewport() {
         return !/^((?!chrome|android).)*safari/i.test(getUAString());
       }
       __name(isLayoutViewport, "isLayoutViewport");
+      function isLastTraversableNode(node) {
+        return ["html", "body", "#document"].includes(getNodeName(node));
+      }
+      __name(isLastTraversableNode, "isLastTraversableNode");
       const min = Math.min;
       const max = Math.max;
       const round = Math.round;
@@ -9668,7 +9734,7 @@ var require_floating_ui_dom_umd = __commonJS({
       }
       __name(getParentNode, "getParentNode");
       function getTrueOffsetParent(element) {
-        if (!isHTMLElement(element) || getComputedStyle(element).position === "fixed") {
+        if (!isHTMLElement(element) || getComputedStyle2(element).position === "fixed") {
           return null;
         }
         return element.offsetParent;
@@ -9679,11 +9745,12 @@ var require_floating_ui_dom_umd = __commonJS({
         if (isShadowRoot(currentNode)) {
           currentNode = currentNode.host;
         }
-        while (isHTMLElement(currentNode) && !["html", "body"].includes(getNodeName(currentNode))) {
+        while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
           if (isContainingBlock(currentNode)) {
             return currentNode;
           } else {
-            currentNode = currentNode.parentNode;
+            const parent = currentNode.parentNode;
+            currentNode = isShadowRoot(parent) ? parent.host : parent;
           }
         }
         return null;
@@ -9692,10 +9759,10 @@ var require_floating_ui_dom_umd = __commonJS({
       function getOffsetParent(element) {
         const window2 = getWindow(element);
         let offsetParent = getTrueOffsetParent(element);
-        while (offsetParent && isTableElement(offsetParent) && getComputedStyle(offsetParent).position === "static") {
+        while (offsetParent && isTableElement(offsetParent) && getComputedStyle2(offsetParent).position === "static") {
           offsetParent = getTrueOffsetParent(offsetParent);
         }
-        if (offsetParent && (getNodeName(offsetParent) === "html" || getNodeName(offsetParent) === "body" && getComputedStyle(offsetParent).position === "static" && !isContainingBlock(offsetParent))) {
+        if (offsetParent && (getNodeName(offsetParent) === "html" || getNodeName(offsetParent) === "body" && getComputedStyle2(offsetParent).position === "static" && !isContainingBlock(offsetParent))) {
           return window2;
         }
         return offsetParent || getContainingBlock(element) || window2;
@@ -9785,7 +9852,7 @@ var require_floating_ui_dom_umd = __commonJS({
         const height = max(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
         let x = -scroll.scrollLeft + getWindowScrollBarX(element);
         const y = -scroll.scrollTop;
-        if (getComputedStyle$1(body || html).direction === "rtl") {
+        if (getComputedStyle2(body || html).direction === "rtl") {
           x += max(html.clientWidth, body ? body.clientWidth : 0) - width;
         }
         return {
@@ -9798,7 +9865,7 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(getDocumentRect, "getDocumentRect");
       function getNearestOverflowAncestor(node) {
         const parentNode = getParentNode(node);
-        if (["html", "body", "#document"].includes(getNodeName(parentNode))) {
+        if (isLastTraversableNode(parentNode)) {
           return node.ownerDocument.body;
         }
         if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
@@ -9836,6 +9903,18 @@ var require_floating_ui_dom_umd = __commonJS({
         return false;
       }
       __name(contains, "contains");
+      function getNearestParentCapableOfEscapingClipping(element, clippingAncestors) {
+        let currentNode = element;
+        while (currentNode && !isLastTraversableNode(currentNode) && !clippingAncestors.includes(currentNode)) {
+          if (isElement(currentNode) && ["absolute", "fixed"].includes(getComputedStyle2(currentNode).position)) {
+            break;
+          }
+          const parentNode = getParentNode(currentNode);
+          currentNode = isShadowRoot(parentNode) ? parentNode.host : parentNode;
+        }
+        return currentNode;
+      }
+      __name(getNearestParentCapableOfEscapingClipping, "getNearestParentCapableOfEscapingClipping");
       function getInnerBoundingClientRect(element, strategy) {
         const clientRect = getBoundingClientRect(element, false, strategy === "fixed");
         const top = clientRect.top + element.clientTop;
@@ -9864,12 +9943,20 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(getClientRectFromClippingAncestor, "getClientRectFromClippingAncestor");
       function getClippingAncestors(element) {
         const clippingAncestors = getOverflowAncestors(element);
-        const canEscapeClipping = ["absolute", "fixed"].includes(getComputedStyle$1(element).position);
-        const clipperElement = canEscapeClipping && isHTMLElement(element) ? getOffsetParent(element) : element;
+        const nearestEscapableParent = getNearestParentCapableOfEscapingClipping(element, clippingAncestors);
+        let clipperElement = null;
+        if (nearestEscapableParent && isHTMLElement(nearestEscapableParent)) {
+          const offsetParent = getOffsetParent(nearestEscapableParent);
+          if (isOverflowElement(nearestEscapableParent)) {
+            clipperElement = nearestEscapableParent;
+          } else if (isHTMLElement(offsetParent)) {
+            clipperElement = offsetParent;
+          }
+        }
         if (!isElement(clipperElement)) {
           return [];
         }
-        return clippingAncestors.filter((clippingAncestors2) => isElement(clippingAncestors2) && contains(clippingAncestors2, clipperElement) && getNodeName(clippingAncestors2) !== "body");
+        return clippingAncestors.filter((clippingAncestors2) => clipperElement && isElement(clippingAncestors2) && contains(clippingAncestors2, clipperElement) && getNodeName(clippingAncestors2) !== "body");
       }
       __name(getClippingAncestors, "getClippingAncestors");
       function getClippingRect(_ref) {
@@ -9921,7 +10008,7 @@ var require_floating_ui_dom_umd = __commonJS({
           };
         },
         getClientRects: (element) => Array.from(element.getClientRects()),
-        isRTL: (element) => getComputedStyle$1(element).direction === "rtl"
+        isRTL: (element) => getComputedStyle2(element).direction === "rtl"
       };
       function autoUpdate(reference, floating, update, options) {
         if (options === void 0) {
@@ -9929,13 +10016,12 @@ var require_floating_ui_dom_umd = __commonJS({
         }
         const {
           ancestorScroll: _ancestorScroll = true,
-          ancestorResize: _ancestorResize = true,
+          ancestorResize = true,
           elementResize = true,
           animationFrame = false
         } = options;
         const ancestorScroll = _ancestorScroll && !animationFrame;
-        const ancestorResize = _ancestorResize && !animationFrame;
-        const ancestors = ancestorScroll || ancestorResize ? [...isElement(reference) ? getOverflowAncestors(reference) : [], ...getOverflowAncestors(floating)] : [];
+        const ancestors = ancestorScroll || ancestorResize ? [...isElement(reference) ? getOverflowAncestors(reference) : reference.contextElement ? getOverflowAncestors(reference.contextElement) : [], ...getOverflowAncestors(floating)] : [];
         ancestors.forEach((ancestor) => {
           ancestorScroll && ancestor.addEventListener("scroll", update, {
             passive: true
@@ -9952,6 +10038,9 @@ var require_floating_ui_dom_umd = __commonJS({
             initialUpdate = false;
           });
           isElement(reference) && !animationFrame && observer.observe(reference);
+          if (!isElement(reference) && reference.contextElement && !animationFrame) {
+            observer.observe(reference.contextElement);
+          }
           observer.observe(floating);
         }
         let frameId;
@@ -10050,6 +10139,7 @@ var require_floating_ui_dom_umd = __commonJS({
       exports2.autoUpdate = autoUpdate;
       exports2.computePosition = computePosition;
       exports2.getOverflowAncestors = getOverflowAncestors;
+      exports2.platform = platform;
       Object.defineProperty(exports2, "__esModule", { value: true });
     });
   }
@@ -15561,7 +15651,6 @@ var require_Slider = __commonJS({
           },
           size: sizeProp ?? context.size ?? "$4",
           onLayout: (e) => {
-            console.log("did layout");
             setSize(e.nativeEvent.layout[orientation.sizeProp]);
           },
           ...{
@@ -17094,40 +17183,33 @@ var require_Input = __commonJS({
     var import_focusable = require_cjs30();
     var import_react_native3 = require("react-native-web-lite");
     var import_inputHelpers = require_inputHelpers();
-    var InputFrame = (0, import_core4.styled)(
-      import_react_native3.TextInput,
-      {
-        name: "Input",
-        fontFamily: "$body",
-        borderWidth: 1,
-        color: "$color",
-        focusable: true,
-        borderColor: "$borderColor",
-        backgroundColor: "$background",
-        minWidth: 0,
-        hoverStyle: {
-          borderColor: "$borderColorHover"
-        },
-        focusStyle: {
-          borderColor: "$borderColorFocus",
-          borderWidth: 2,
-          marginHorizontal: -1
-        },
-        variants: {
-          size: {
-            "...size": import_inputHelpers.inputSizeVariant
-          }
-        },
-        defaultVariants: {
-          size: "$4"
+    var InputFrame = (0, import_core4.styled)(import_react_native3.TextInput, {
+      name: "Input",
+      fontFamily: "$body",
+      borderWidth: 1,
+      color: "$color",
+      focusable: true,
+      borderColor: "$borderColor",
+      backgroundColor: "$background",
+      minWidth: 0,
+      hoverStyle: {
+        borderColor: "$borderColorHover"
+      },
+      focusStyle: {
+        borderColor: "$borderColorFocus",
+        borderWidth: 2,
+        marginHorizontal: -1
+      },
+      variants: {
+        size: {
+          "...size": import_inputHelpers.inputSizeVariant
         }
       },
-      {
-        isText: true,
-        isReactNative: true
+      defaultVariants: {
+        size: "$4"
       }
-    );
-    var Input = InputFrame.extractable((0, import_focusable.focusableInputHOC)(InputFrame));
+    });
+    var Input = (0, import_focusable.focusableInputHOC)(InputFrame);
   }
 });
 
@@ -17721,7 +17803,7 @@ var require_cjs46 = __commonJS({
       withStaticProperties: () => import_core4.withStaticProperties
     });
     module2.exports = __toCommonJS2(src_exports);
-    var import_polyfills = require_polyfills();
+    __reExport2(src_exports, require_setup(), module2.exports);
     __reExport2(src_exports, require_cjs2(), module2.exports);
     __reExport2(src_exports, require_cjs20(), module2.exports);
     __reExport2(src_exports, require_cjs23(), module2.exports);
@@ -18010,9 +18092,9 @@ var require_cjs49 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/amber.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/amber.js
 var require_amber = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/amber.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/amber.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18053,9 +18135,9 @@ var require_amber = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/blue.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/blue.js
 var require_blue = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/blue.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/blue.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18096,9 +18178,9 @@ var require_blue = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/bronze.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/bronze.js
 var require_bronze = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/bronze.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/bronze.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18139,9 +18221,9 @@ var require_bronze = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/brown.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/brown.js
 var require_brown = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/brown.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/brown.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18182,9 +18264,9 @@ var require_brown = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/crimson.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/crimson.js
 var require_crimson = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/crimson.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/crimson.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18225,9 +18307,9 @@ var require_crimson = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/cyan.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/cyan.js
 var require_cyan = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/cyan.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/cyan.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18268,9 +18350,9 @@ var require_cyan = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/gold.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/gold.js
 var require_gold = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/gold.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/gold.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18311,9 +18393,9 @@ var require_gold = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/grass.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grass.js
 var require_grass = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/grass.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grass.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18354,9 +18436,9 @@ var require_grass = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/gray.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/gray.js
 var require_gray = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/gray.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/gray.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18397,9 +18479,9 @@ var require_gray = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/green.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/green.js
 var require_green = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/green.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/green.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18440,9 +18522,9 @@ var require_green = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/indigo.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/indigo.js
 var require_indigo = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/indigo.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/indigo.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18483,9 +18565,9 @@ var require_indigo = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/lime.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/lime.js
 var require_lime = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/lime.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/lime.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18526,9 +18608,9 @@ var require_lime = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/mint.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mint.js
 var require_mint = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/mint.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mint.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18569,9 +18651,9 @@ var require_mint = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/olive.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/olive.js
 var require_olive = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/olive.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/olive.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18612,9 +18694,9 @@ var require_olive = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/orange.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/orange.js
 var require_orange = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/orange.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/orange.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18655,9 +18737,9 @@ var require_orange = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/pink.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/pink.js
 var require_pink = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/pink.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/pink.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18698,9 +18780,9 @@ var require_pink = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/plum.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/plum.js
 var require_plum = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/plum.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/plum.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18741,9 +18823,9 @@ var require_plum = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/purple.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/purple.js
 var require_purple = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/purple.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/purple.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18784,9 +18866,9 @@ var require_purple = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/mauve.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mauve.js
 var require_mauve = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/mauve.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mauve.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18827,9 +18909,9 @@ var require_mauve = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/red.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/red.js
 var require_red = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/red.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/red.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18870,9 +18952,9 @@ var require_red = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/sage.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sage.js
 var require_sage = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/sage.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sage.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18913,9 +18995,9 @@ var require_sage = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/sand.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sand.js
 var require_sand = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/sand.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sand.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18956,9 +19038,9 @@ var require_sand = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/sky.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sky.js
 var require_sky = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/sky.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sky.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -18999,9 +19081,9 @@ var require_sky = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/slate.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/slate.js
 var require_slate = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/slate.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/slate.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19042,9 +19124,9 @@ var require_slate = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/teal.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/teal.js
 var require_teal = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/teal.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/teal.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19085,9 +19167,9 @@ var require_teal = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/tomato.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tomato.js
 var require_tomato = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/tomato.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tomato.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19128,9 +19210,9 @@ var require_tomato = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/violet.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/violet.js
 var require_violet = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/violet.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/violet.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19171,9 +19253,9 @@ var require_violet = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/yellow.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/yellow.js
 var require_yellow = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/yellow.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/yellow.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19214,9 +19296,9 @@ var require_yellow = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/amberA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/amberA.js
 var require_amberA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/amberA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/amberA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19257,9 +19339,9 @@ var require_amberA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/blueA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/blueA.js
 var require_blueA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/blueA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/blueA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19300,9 +19382,9 @@ var require_blueA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/bronzeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/bronzeA.js
 var require_bronzeA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/bronzeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/bronzeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19343,9 +19425,9 @@ var require_bronzeA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/brownA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/brownA.js
 var require_brownA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/brownA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/brownA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19386,9 +19468,9 @@ var require_brownA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/crimsonA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/crimsonA.js
 var require_crimsonA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/crimsonA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/crimsonA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19429,9 +19511,9 @@ var require_crimsonA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/cyanA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/cyanA.js
 var require_cyanA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/cyanA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/cyanA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19472,9 +19554,9 @@ var require_cyanA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/goldA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/goldA.js
 var require_goldA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/goldA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/goldA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19515,9 +19597,9 @@ var require_goldA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/grassA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grassA.js
 var require_grassA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/grassA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grassA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19558,9 +19640,9 @@ var require_grassA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/grayA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grayA.js
 var require_grayA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/grayA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/grayA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19601,9 +19683,9 @@ var require_grayA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/greenA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/greenA.js
 var require_greenA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/greenA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/greenA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19644,9 +19726,9 @@ var require_greenA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/indigoA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/indigoA.js
 var require_indigoA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/indigoA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/indigoA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19687,9 +19769,9 @@ var require_indigoA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/limeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/limeA.js
 var require_limeA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/limeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/limeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19730,9 +19812,9 @@ var require_limeA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/mintA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mintA.js
 var require_mintA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/mintA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mintA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19773,9 +19855,9 @@ var require_mintA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/oliveA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/oliveA.js
 var require_oliveA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/oliveA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/oliveA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19816,9 +19898,9 @@ var require_oliveA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/orangeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/orangeA.js
 var require_orangeA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/orangeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/orangeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19859,9 +19941,9 @@ var require_orangeA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/pinkA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/pinkA.js
 var require_pinkA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/pinkA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/pinkA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19902,9 +19984,9 @@ var require_pinkA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/plumA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/plumA.js
 var require_plumA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/plumA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/plumA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19945,9 +20027,9 @@ var require_plumA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/purpleA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/purpleA.js
 var require_purpleA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/purpleA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/purpleA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -19988,9 +20070,9 @@ var require_purpleA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/mauveA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mauveA.js
 var require_mauveA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/mauveA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/mauveA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20031,9 +20113,9 @@ var require_mauveA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/redA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/redA.js
 var require_redA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/redA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/redA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20074,9 +20156,9 @@ var require_redA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/sageA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sageA.js
 var require_sageA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/sageA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sageA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20117,9 +20199,9 @@ var require_sageA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/sandA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sandA.js
 var require_sandA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/sandA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/sandA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20160,9 +20242,9 @@ var require_sandA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/skyA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/skyA.js
 var require_skyA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/skyA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/skyA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20203,9 +20285,9 @@ var require_skyA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/slateA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/slateA.js
 var require_slateA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/slateA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/slateA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20246,9 +20328,9 @@ var require_slateA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/tealA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tealA.js
 var require_tealA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/tealA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tealA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20289,9 +20371,9 @@ var require_tealA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/tomatoA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tomatoA.js
 var require_tomatoA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/tomatoA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/tomatoA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20332,9 +20414,9 @@ var require_tomatoA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/violetA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/violetA.js
 var require_violetA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/violetA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/violetA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20375,9 +20457,9 @@ var require_violetA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/dark/yellowA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/yellowA.js
 var require_yellowA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/dark/yellowA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/dark/yellowA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20418,9 +20500,9 @@ var require_yellowA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/amber.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/amber.js
 var require_amber2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/amber.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/amber.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20461,9 +20543,9 @@ var require_amber2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/blue.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/blue.js
 var require_blue2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/blue.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/blue.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20504,9 +20586,9 @@ var require_blue2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/bronze.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/bronze.js
 var require_bronze2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/bronze.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/bronze.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20547,9 +20629,9 @@ var require_bronze2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/brown.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/brown.js
 var require_brown2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/brown.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/brown.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20590,9 +20672,9 @@ var require_brown2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/crimson.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/crimson.js
 var require_crimson2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/crimson.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/crimson.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20633,9 +20715,9 @@ var require_crimson2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/cyan.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/cyan.js
 var require_cyan2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/cyan.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/cyan.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20676,9 +20758,9 @@ var require_cyan2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/gold.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/gold.js
 var require_gold2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/gold.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/gold.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20719,9 +20801,9 @@ var require_gold2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/grass.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grass.js
 var require_grass2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/grass.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grass.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20762,9 +20844,9 @@ var require_grass2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/gray.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/gray.js
 var require_gray2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/gray.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/gray.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20805,9 +20887,9 @@ var require_gray2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/green.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/green.js
 var require_green2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/green.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/green.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20848,9 +20930,9 @@ var require_green2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/indigo.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/indigo.js
 var require_indigo2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/indigo.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/indigo.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20891,9 +20973,9 @@ var require_indigo2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/lime.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/lime.js
 var require_lime2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/lime.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/lime.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20934,9 +21016,9 @@ var require_lime2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/mint.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mint.js
 var require_mint2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/mint.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mint.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -20977,9 +21059,9 @@ var require_mint2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/olive.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/olive.js
 var require_olive2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/olive.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/olive.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21020,9 +21102,9 @@ var require_olive2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/orange.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/orange.js
 var require_orange2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/orange.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/orange.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21063,9 +21145,9 @@ var require_orange2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/pink.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/pink.js
 var require_pink2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/pink.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/pink.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21106,9 +21188,9 @@ var require_pink2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/plum.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/plum.js
 var require_plum2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/plum.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/plum.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21149,9 +21231,9 @@ var require_plum2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/purple.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/purple.js
 var require_purple2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/purple.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/purple.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21192,9 +21274,9 @@ var require_purple2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/mauve.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mauve.js
 var require_mauve2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/mauve.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mauve.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21235,9 +21317,9 @@ var require_mauve2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/red.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/red.js
 var require_red2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/red.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/red.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21278,9 +21360,9 @@ var require_red2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/sage.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sage.js
 var require_sage2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/sage.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sage.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21321,9 +21403,9 @@ var require_sage2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/sand.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sand.js
 var require_sand2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/sand.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sand.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21364,9 +21446,9 @@ var require_sand2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/sky.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sky.js
 var require_sky2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/sky.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sky.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21407,9 +21489,9 @@ var require_sky2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/slate.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/slate.js
 var require_slate2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/slate.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/slate.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21450,9 +21532,9 @@ var require_slate2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/teal.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/teal.js
 var require_teal2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/teal.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/teal.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21493,9 +21575,9 @@ var require_teal2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/tomato.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tomato.js
 var require_tomato2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/tomato.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tomato.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21536,9 +21618,9 @@ var require_tomato2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/violet.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/violet.js
 var require_violet2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/violet.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/violet.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21579,9 +21661,9 @@ var require_violet2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/yellow.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/yellow.js
 var require_yellow2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/yellow.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/yellow.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21622,9 +21704,9 @@ var require_yellow2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/amberA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/amberA.js
 var require_amberA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/amberA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/amberA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21665,9 +21747,9 @@ var require_amberA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/blueA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/blueA.js
 var require_blueA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/blueA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/blueA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21708,9 +21790,9 @@ var require_blueA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/bronzeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/bronzeA.js
 var require_bronzeA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/bronzeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/bronzeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21751,9 +21833,9 @@ var require_bronzeA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/brownA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/brownA.js
 var require_brownA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/brownA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/brownA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21794,9 +21876,9 @@ var require_brownA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/crimsonA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/crimsonA.js
 var require_crimsonA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/crimsonA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/crimsonA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21837,9 +21919,9 @@ var require_crimsonA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/cyanA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/cyanA.js
 var require_cyanA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/cyanA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/cyanA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21880,9 +21962,9 @@ var require_cyanA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/goldA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/goldA.js
 var require_goldA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/goldA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/goldA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21923,9 +22005,9 @@ var require_goldA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/grassA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grassA.js
 var require_grassA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/grassA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grassA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -21966,9 +22048,9 @@ var require_grassA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/grayA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grayA.js
 var require_grayA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/grayA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/grayA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22009,9 +22091,9 @@ var require_grayA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/greenA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/greenA.js
 var require_greenA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/greenA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/greenA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22052,9 +22134,9 @@ var require_greenA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/indigoA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/indigoA.js
 var require_indigoA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/indigoA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/indigoA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22095,9 +22177,9 @@ var require_indigoA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/limeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/limeA.js
 var require_limeA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/limeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/limeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22138,9 +22220,9 @@ var require_limeA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/mintA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mintA.js
 var require_mintA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/mintA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mintA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22181,9 +22263,9 @@ var require_mintA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/oliveA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/oliveA.js
 var require_oliveA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/oliveA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/oliveA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22224,9 +22306,9 @@ var require_oliveA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/orangeA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/orangeA.js
 var require_orangeA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/orangeA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/orangeA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22267,9 +22349,9 @@ var require_orangeA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/pinkA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/pinkA.js
 var require_pinkA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/pinkA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/pinkA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22310,9 +22392,9 @@ var require_pinkA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/plumA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/plumA.js
 var require_plumA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/plumA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/plumA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22353,9 +22435,9 @@ var require_plumA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/purpleA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/purpleA.js
 var require_purpleA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/purpleA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/purpleA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22396,9 +22478,9 @@ var require_purpleA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/mauveA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mauveA.js
 var require_mauveA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/mauveA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/mauveA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22439,9 +22521,9 @@ var require_mauveA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/redA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/redA.js
 var require_redA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/redA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/redA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22482,9 +22564,9 @@ var require_redA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/sageA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sageA.js
 var require_sageA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/sageA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sageA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22525,9 +22607,9 @@ var require_sageA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/sandA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sandA.js
 var require_sandA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/sandA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/sandA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22568,9 +22650,9 @@ var require_sandA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/skyA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/skyA.js
 var require_skyA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/skyA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/skyA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22611,9 +22693,9 @@ var require_skyA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/slateA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/slateA.js
 var require_slateA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/slateA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/slateA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22654,9 +22736,9 @@ var require_slateA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/tealA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tealA.js
 var require_tealA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/tealA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tealA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22697,9 +22779,9 @@ var require_tealA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/tomatoA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tomatoA.js
 var require_tomatoA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/tomatoA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/tomatoA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22740,9 +22822,9 @@ var require_tomatoA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/violetA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/violetA.js
 var require_violetA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/violetA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/violetA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22783,9 +22865,9 @@ var require_violetA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/light/yellowA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/yellowA.js
 var require_yellowA2 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/light/yellowA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/light/yellowA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22826,9 +22908,9 @@ var require_yellowA2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/blackA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/blackA.js
 var require_blackA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/blackA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/blackA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22869,9 +22951,9 @@ var require_blackA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/whiteA.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/whiteA.js
 var require_whiteA = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/whiteA.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/whiteA.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -22912,9 +22994,9 @@ var require_whiteA = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/colors/dist/cjs/index.js
+// ../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/index.js
 var require_cjs50 = __commonJS({
-  "../../node_modules/@tamagui/colors/dist/cjs/index.js"(exports, module2) {
+  "../../node_modules/@tamagui/theme-base/node_modules/@tamagui/colors/dist/cjs/index.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;

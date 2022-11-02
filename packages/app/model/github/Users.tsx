@@ -96,8 +96,4 @@ type ProjectDto = {
   default_branch: string
 }
 
-type ProjectList = {
-  projects: Array<ProjectDto>
-}
-
-export { OwnerDto, ProjectDto, ProjectList }
+export { OwnerDto, ProjectDto }

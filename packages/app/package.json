@@ -15,10 +15,11 @@
     "@tamagui/lucide-icons": "1.0.1-beta.197",
     "@tamagui/shorthands": "1.0.1-beta.197",
     "@tamagui/theme-base": "1.0.1-beta.197",
+    "@xstate/react": "^3.0.1",
     "axios": "^0.24.0",
     "expo-linking": "^3.2.2",
     "solito": "^0.0.26",
-    "xstate": "^4.33.5"
+    "xstate": "^4.34.0"
   },
   "sideEffects": false
 }

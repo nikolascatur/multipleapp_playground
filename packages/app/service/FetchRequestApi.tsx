@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import React, { createContext, FC, useContext, useMemo } from 'react'
+import React, { createContext, FC, ReactNode, useContext, useMemo } from 'react'
 import { TokensApi } from 'app/model/auth/TokenDto'
 
 type RequestOptions = Partial<AxiosRequestConfig> & {
@@ -20,6 +20,7 @@ type RequestProps = {
   getToken: () => Promise<TokensApi>
   setToken: (tokens: TokensApi) => Promise<TokensApi>
   onRefreshToken: () => void
+  children: ReactNode
 }
 
 const Context = createContext<ContextValue | undefined>(undefined)

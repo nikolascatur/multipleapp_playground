@@ -30,10 +30,41 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../node_modules/tamagui/dist/cjs/polyfills.js
-var require_polyfills = __commonJS({
-  "../../node_modules/tamagui/dist/cjs/polyfills.js"() {
+// ../../node_modules/tamagui/dist/cjs/setup.js
+var require_setup = __commonJS({
+  "../../node_modules/tamagui/dist/cjs/setup.js"(exports2, module2) {
     "use strict";
+    var __defProp3 = Object.defineProperty;
+    var __getOwnPropDesc3 = Object.getOwnPropertyDescriptor;
+    var __getOwnPropNames3 = Object.getOwnPropertyNames;
+    var __hasOwnProp3 = Object.prototype.hasOwnProperty;
+    var __export3 = /* @__PURE__ */ __name((target, all) => {
+      for (var name in all)
+        __defProp3(target, name, { get: all[name], enumerable: true });
+    }, "__export");
+    var __copyProps3 = /* @__PURE__ */ __name((to, from, except, desc) => {
+      if (from && typeof from === "object" || typeof from === "function") {
+        for (let key of __getOwnPropNames3(from))
+          if (!__hasOwnProp3.call(to, key) && key !== except)
+            __defProp3(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc3(from, key)) || desc.enumerable });
+      }
+      return to;
+    }, "__copyProps");
+    var __toCommonJS3 = /* @__PURE__ */ __name((mod) => __copyProps3(__defProp3({}, "__esModule", { value: true }), mod), "__toCommonJS");
+    var setup_exports = {};
+    __export3(setup_exports, {
+      idFn: () => idFn
+    });
+    module2.exports = __toCommonJS3(setup_exports);
+    var import_core2 = require("@tamagui/core-node");
+    var import_react_native3 = require("react-native-web-lite");
+    (0, import_core2.setupReactNative)({
+      Image: import_react_native3.Image,
+      View: import_react_native3.View,
+      Text: import_react_native3.Text,
+      TextInput: import_react_native3.TextInput,
+      ScrollView: import_react_native3.ScrollView
+    });
     if (typeof requestAnimationFrame === "undefined") {
       globalThis["requestAnimationFrame"] = setImmediate;
     }
@@ -43,6 +74,8 @@ var require_polyfills = __commonJS({
       } catch {
       }
     };
+    var idFn = /* @__PURE__ */ __name(() => {
+    }, "idFn");
   }
 });
 
@@ -727,6 +760,7 @@ var require_es5 = __commonJS({
   "../../node_modules/aria-hidden/dist/es5/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.suppressOthers = exports2.supportsInert = exports2.inertOthers = exports2.hideOthers = void 0;
     var getDefaultParent = /* @__PURE__ */ __name(function(originalTarget) {
       if (typeof document === "undefined") {
         return null;
@@ -738,13 +772,7 @@ var require_es5 = __commonJS({
     var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
     var markerMap = {};
     var lockCount = 0;
-    exports2.hideOthers = function(originalTarget, parentNode, markerName) {
-      if (parentNode === void 0) {
-        parentNode = getDefaultParent(originalTarget);
-      }
-      if (markerName === void 0) {
-        markerName = "data-aria-hidden";
-      }
+    var applyAttributeToOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName, controlAttribute) {
       var targets = Array.isArray(originalTarget) ? originalTarget : [originalTarget];
       if (!markerMap[markerName]) {
         markerMap[markerName] = /* @__PURE__ */ new WeakMap();
@@ -752,6 +780,7 @@ var require_es5 = __commonJS({
       var markerCounter = markerMap[markerName];
       var hiddenNodes = [];
       var elementsToKeep = /* @__PURE__ */ new Set();
+      var elementsToStop = new Set(targets);
       var keep = /* @__PURE__ */ __name(function(el) {
         if (!el || elementsToKeep.has(el)) {
           return;
@@ -761,14 +790,14 @@ var require_es5 = __commonJS({
       }, "keep");
       targets.forEach(keep);
       var deep = /* @__PURE__ */ __name(function(parent) {
-        if (!parent || targets.indexOf(parent) >= 0) {
+        if (!parent || elementsToStop.has(parent)) {
           return;
         }
         Array.prototype.forEach.call(parent.children, function(node) {
           if (elementsToKeep.has(node)) {
             deep(node);
           } else {
-            var attr = node.getAttribute("aria-hidden");
+            var attr = node.getAttribute(controlAttribute);
             var alreadyHidden = attr !== null && attr !== "false";
             var counterValue = (counterMap.get(node) || 0) + 1;
             var markerValue = (markerCounter.get(node) || 0) + 1;
@@ -782,7 +811,7 @@ var require_es5 = __commonJS({
               node.setAttribute(markerName, "true");
             }
             if (!alreadyHidden) {
-              node.setAttribute("aria-hidden", "true");
+              node.setAttribute(controlAttribute, "true");
             }
           }
         });
@@ -798,7 +827,7 @@ var require_es5 = __commonJS({
           markerCounter.set(node, markerValue);
           if (!counterValue) {
             if (!uncontrolledNodes.has(node)) {
-              node.removeAttribute("aria-hidden");
+              node.removeAttribute(controlAttribute);
             }
             uncontrolledNodes.delete(node);
           }
@@ -814,7 +843,46 @@ var require_es5 = __commonJS({
           markerMap = {};
         }
       };
-    };
+    }, "applyAttributeToOthers");
+    var hideOthers2 = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-aria-hidden";
+      }
+      var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+      var activeParentNode = parentNode || getDefaultParent(originalTarget);
+      if (!activeParentNode) {
+        return function() {
+          return null;
+        };
+      }
+      targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live]")));
+      return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
+    }, "hideOthers");
+    exports2.hideOthers = hideOthers2;
+    var inertOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-inert-ed";
+      }
+      var activeParentNode = parentNode || getDefaultParent(originalTarget);
+      if (!activeParentNode) {
+        return function() {
+          return null;
+        };
+      }
+      return applyAttributeToOthers(originalTarget, activeParentNode, markerName, "inert");
+    }, "inertOthers");
+    exports2.inertOthers = inertOthers;
+    var supportsInert = /* @__PURE__ */ __name(function() {
+      return typeof HTMLElement !== "undefined" && HTMLElement.prototype.hasOwnProperty("inert");
+    }, "supportsInert");
+    exports2.supportsInert = supportsInert;
+    var suppressOthers = /* @__PURE__ */ __name(function(originalTarget, parentNode, markerName) {
+      if (markerName === void 0) {
+        markerName = "data-suppressed";
+      }
+      return ((0, exports2.supportsInert)() ? exports2.inertOthers : exports2.hideOthers)(originalTarget, parentNode, markerName);
+    }, "suppressOthers");
+    exports2.suppressOthers = suppressOthers;
   }
 });
 
@@ -2541,7 +2609,7 @@ var require_tslib = __commonJS({
         function step(op) {
           if (f)
             throw new TypeError("Generator is already executing.");
-          while (_)
+          while (g && (g = 0, op[0] && (_ = 0)), _)
             try {
               if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done)
                 return t;
@@ -3657,11 +3725,6 @@ var require_utils = __commonJS({
     }, "parse");
     var getOffset = /* @__PURE__ */ __name(function(gapMode) {
       var cs = window.getComputedStyle(document.body);
-      if (process.env.NODE_ENV !== "production") {
-        if (cs.overflowY === "hidden") {
-          console.error("react-remove-scroll-bar: cannot calculate scrollbar size because it is removed (overflow:hidden on body");
-        }
-      }
       var left = cs[gapMode === "padding" ? "paddingLeft" : "marginLeft"];
       var top = cs[gapMode === "padding" ? "paddingTop" : "marginTop"];
       var right = cs[gapMode === "padding" ? "paddingRight" : "marginRight"];
@@ -4386,9 +4449,15 @@ var require_ScrollView = __commonJS({
     module2.exports = __toCommonJS3(ScrollView_exports);
     var import_core2 = require("@tamagui/core-node");
     var import_react_native3 = require("react-native-web-lite");
-    var ScrollView = (0, import_core2.styled)(import_react_native3.ScrollView, {
-      name: "ScrollView"
-    });
+    var ScrollView = (0, import_core2.styled)(
+      import_react_native3.ScrollView,
+      {
+        name: "ScrollView"
+      },
+      {
+        isReactNative: true
+      }
+    );
   }
 });
 
@@ -4887,7 +4956,6 @@ var require_Sheet = __commonJS({
                 const isScrolled = scrollBridge.y !== 0;
                 const isDraggingUp = dy < 0;
                 const isAtTop = scrollBridge.paneY <= scrollBridge.paneMinY;
-                console.log(">??");
                 if (isScrolled) {
                   previouslyScrolling = true;
                   return false;
@@ -5228,22 +5296,16 @@ var require_SizableText = __commonJS({
     module2.exports = __toCommonJS3(SizableText_exports);
     var import_core2 = require("@tamagui/core-node");
     var import_get_font_sized = require_cjs17();
-    var SizableText = (0, import_core2.styled)(
-      import_core2.Text,
-      {
-        name: "SizableText",
-        fontFamily: "$body",
-        variants: {
-          size: import_get_font_sized.getFontSized
-        },
-        defaultVariants: {
-          size: "$4"
-        }
+    var SizableText = (0, import_core2.styled)(import_core2.Text, {
+      name: "SizableText",
+      fontFamily: "$body",
+      variants: {
+        size: import_get_font_sized.getFontSized
       },
-      {
-        inlineWhenUnflattened: /* @__PURE__ */ new Set(["fontFamily"])
+      defaultVariants: {
+        size: "$4"
       }
-    );
+    });
   }
 });
 
@@ -6479,19 +6541,12 @@ var require_Image = __commonJS({
     var import_react = __toESM2(require("react"));
     var import_react_native3 = require("react-native-web-lite");
     import_react.default["createElement"];
-    var StyledImage = (0, import_core2.styled)(
-      import_react_native3.Image,
-      {
-        name: "Image",
-        position: "relative",
-        source: { uri: "" },
-        zIndex: 1
-      },
-      {
-        inlineProps: /* @__PURE__ */ new Set(["src", "width", "height"]),
-        isReactNative: true
-      }
-    );
+    var StyledImage = (0, import_core2.styled)(import_react_native3.Image, {
+      name: "Image",
+      position: "relative",
+      source: { uri: "" },
+      zIndex: 1
+    });
     var Image = StyledImage.extractable((inProps) => {
       const props = (0, import_core2.getExpandedShorthands)(inProps);
       const { src, ...rest } = props;
@@ -8030,13 +8085,14 @@ var require_focusableInputHOC = __commonJS({
               (0, import_registerFocusable.unregisterFocusable)(props.id);
             };
           }, [props.id]);
+          const onChangeText = (0, import_core2.useEvent)((value) => {
+            var _a;
+            inputValue.current = value;
+            (_a = props.onChangeText) == null ? void 0 : _a.call(props, value);
+          });
           const finalProps = isInput ? {
             ...props,
-            onChangeText(value) {
-              var _a;
-              inputValue.current = value;
-              (_a = props.onChangeText) == null ? void 0 : _a.call(props, value);
-            }
+            onChangeText
           } : props;
           return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component2, {
             ref: combinedRefs,
@@ -9503,10 +9559,10 @@ var require_floating_ui_dom_umd = __commonJS({
         return node;
       }
       __name(getWindow, "getWindow");
-      function getComputedStyle$1(element) {
+      function getComputedStyle2(element) {
         return getWindow(element).getComputedStyle(element);
       }
-      __name(getComputedStyle$1, "getComputedStyle$1");
+      __name(getComputedStyle2, "getComputedStyle");
       function getNodeName(node) {
         return isWindow(node) ? "" : node ? (node.nodeName || "").toLowerCase() : "";
       }
@@ -9543,9 +9599,10 @@ var require_floating_ui_dom_umd = __commonJS({
         const {
           overflow,
           overflowX,
-          overflowY
-        } = getComputedStyle$1(element);
-        return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX);
+          overflowY,
+          display
+        } = getComputedStyle2(element);
+        return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX) && !["inline", "contents"].includes(display);
       }
       __name(isOverflowElement, "isOverflowElement");
       function isTableElement(element) {
@@ -9554,14 +9611,23 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(isTableElement, "isTableElement");
       function isContainingBlock(element) {
         const isFirefox = /firefox/i.test(getUAString());
-        const css = getComputedStyle$1(element);
-        return css.transform !== "none" || css.perspective !== "none" || css.contain === "paint" || ["transform", "perspective"].includes(css.willChange) || isFirefox && css.willChange === "filter" || isFirefox && (css.filter ? css.filter !== "none" : false);
+        const css = getComputedStyle2(element);
+        return css.transform !== "none" || css.perspective !== "none" || isFirefox && css.willChange === "filter" || isFirefox && (css.filter ? css.filter !== "none" : false) || ["transform", "perspective"].some((value) => css.willChange.includes(value)) || ["paint", "layout", "strict", "content"].some(
+          (value) => {
+            const contain = css.contain;
+            return contain != null ? contain.includes(value) : false;
+          }
+        );
       }
       __name(isContainingBlock, "isContainingBlock");
       function isLayoutViewport() {
         return !/^((?!chrome|android).)*safari/i.test(getUAString());
       }
       __name(isLayoutViewport, "isLayoutViewport");
+      function isLastTraversableNode(node) {
+        return ["html", "body", "#document"].includes(getNodeName(node));
+      }
+      __name(isLastTraversableNode, "isLastTraversableNode");
       const min = Math.min;
       const max = Math.max;
       const round = Math.round;
@@ -9668,7 +9734,7 @@ var require_floating_ui_dom_umd = __commonJS({
       }
       __name(getParentNode, "getParentNode");
       function getTrueOffsetParent(element) {
-        if (!isHTMLElement(element) || getComputedStyle(element).position === "fixed") {
+        if (!isHTMLElement(element) || getComputedStyle2(element).position === "fixed") {
           return null;
         }
         return element.offsetParent;
@@ -9679,11 +9745,12 @@ var require_floating_ui_dom_umd = __commonJS({
         if (isShadowRoot(currentNode)) {
           currentNode = currentNode.host;
         }
-        while (isHTMLElement(currentNode) && !["html", "body"].includes(getNodeName(currentNode))) {
+        while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
           if (isContainingBlock(currentNode)) {
             return currentNode;
           } else {
-            currentNode = currentNode.parentNode;
+            const parent = currentNode.parentNode;
+            currentNode = isShadowRoot(parent) ? parent.host : parent;
           }
         }
         return null;
@@ -9692,10 +9759,10 @@ var require_floating_ui_dom_umd = __commonJS({
       function getOffsetParent(element) {
         const window2 = getWindow(element);
         let offsetParent = getTrueOffsetParent(element);
-        while (offsetParent && isTableElement(offsetParent) && getComputedStyle(offsetParent).position === "static") {
+        while (offsetParent && isTableElement(offsetParent) && getComputedStyle2(offsetParent).position === "static") {
           offsetParent = getTrueOffsetParent(offsetParent);
         }
-        if (offsetParent && (getNodeName(offsetParent) === "html" || getNodeName(offsetParent) === "body" && getComputedStyle(offsetParent).position === "static" && !isContainingBlock(offsetParent))) {
+        if (offsetParent && (getNodeName(offsetParent) === "html" || getNodeName(offsetParent) === "body" && getComputedStyle2(offsetParent).position === "static" && !isContainingBlock(offsetParent))) {
           return window2;
         }
         return offsetParent || getContainingBlock(element) || window2;
@@ -9785,7 +9852,7 @@ var require_floating_ui_dom_umd = __commonJS({
         const height = max(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
         let x = -scroll.scrollLeft + getWindowScrollBarX(element);
         const y = -scroll.scrollTop;
-        if (getComputedStyle$1(body || html).direction === "rtl") {
+        if (getComputedStyle2(body || html).direction === "rtl") {
           x += max(html.clientWidth, body ? body.clientWidth : 0) - width;
         }
         return {
@@ -9798,7 +9865,7 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(getDocumentRect, "getDocumentRect");
       function getNearestOverflowAncestor(node) {
         const parentNode = getParentNode(node);
-        if (["html", "body", "#document"].includes(getNodeName(parentNode))) {
+        if (isLastTraversableNode(parentNode)) {
           return node.ownerDocument.body;
         }
         if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
@@ -9836,6 +9903,18 @@ var require_floating_ui_dom_umd = __commonJS({
         return false;
       }
       __name(contains, "contains");
+      function getNearestParentCapableOfEscapingClipping(element, clippingAncestors) {
+        let currentNode = element;
+        while (currentNode && !isLastTraversableNode(currentNode) && !clippingAncestors.includes(currentNode)) {
+          if (isElement(currentNode) && ["absolute", "fixed"].includes(getComputedStyle2(currentNode).position)) {
+            break;
+          }
+          const parentNode = getParentNode(currentNode);
+          currentNode = isShadowRoot(parentNode) ? parentNode.host : parentNode;
+        }
+        return currentNode;
+      }
+      __name(getNearestParentCapableOfEscapingClipping, "getNearestParentCapableOfEscapingClipping");
       function getInnerBoundingClientRect(element, strategy) {
         const clientRect = getBoundingClientRect(element, false, strategy === "fixed");
         const top = clientRect.top + element.clientTop;
@@ -9864,12 +9943,20 @@ var require_floating_ui_dom_umd = __commonJS({
       __name(getClientRectFromClippingAncestor, "getClientRectFromClippingAncestor");
       function getClippingAncestors(element) {
         const clippingAncestors = getOverflowAncestors(element);
-        const canEscapeClipping = ["absolute", "fixed"].includes(getComputedStyle$1(element).position);
-        const clipperElement = canEscapeClipping && isHTMLElement(element) ? getOffsetParent(element) : element;
+        const nearestEscapableParent = getNearestParentCapableOfEscapingClipping(element, clippingAncestors);
+        let clipperElement = null;
+        if (nearestEscapableParent && isHTMLElement(nearestEscapableParent)) {
+          const offsetParent = getOffsetParent(nearestEscapableParent);
+          if (isOverflowElement(nearestEscapableParent)) {
+            clipperElement = nearestEscapableParent;
+          } else if (isHTMLElement(offsetParent)) {
+            clipperElement = offsetParent;
+          }
+        }
         if (!isElement(clipperElement)) {
           return [];
         }
-        return clippingAncestors.filter((clippingAncestors2) => isElement(clippingAncestors2) && contains(clippingAncestors2, clipperElement) && getNodeName(clippingAncestors2) !== "body");
+        return clippingAncestors.filter((clippingAncestors2) => clipperElement && isElement(clippingAncestors2) && contains(clippingAncestors2, clipperElement) && getNodeName(clippingAncestors2) !== "body");
       }
       __name(getClippingAncestors, "getClippingAncestors");
       function getClippingRect(_ref) {
@@ -9921,7 +10008,7 @@ var require_floating_ui_dom_umd = __commonJS({
           };
         },
         getClientRects: (element) => Array.from(element.getClientRects()),
-        isRTL: (element) => getComputedStyle$1(element).direction === "rtl"
+        isRTL: (element) => getComputedStyle2(element).direction === "rtl"
       };
       function autoUpdate(reference, floating, update, options) {
         if (options === void 0) {
@@ -9929,13 +10016,12 @@ var require_floating_ui_dom_umd = __commonJS({
         }
         const {
           ancestorScroll: _ancestorScroll = true,
-          ancestorResize: _ancestorResize = true,
+          ancestorResize = true,
           elementResize = true,
           animationFrame = false
         } = options;
         const ancestorScroll = _ancestorScroll && !animationFrame;
-        const ancestorResize = _ancestorResize && !animationFrame;
-        const ancestors = ancestorScroll || ancestorResize ? [...isElement(reference) ? getOverflowAncestors(reference) : [], ...getOverflowAncestors(floating)] : [];
+        const ancestors = ancestorScroll || ancestorResize ? [...isElement(reference) ? getOverflowAncestors(reference) : reference.contextElement ? getOverflowAncestors(reference.contextElement) : [], ...getOverflowAncestors(floating)] : [];
         ancestors.forEach((ancestor) => {
           ancestorScroll && ancestor.addEventListener("scroll", update, {
             passive: true
@@ -9952,6 +10038,9 @@ var require_floating_ui_dom_umd = __commonJS({
             initialUpdate = false;
           });
           isElement(reference) && !animationFrame && observer.observe(reference);
+          if (!isElement(reference) && reference.contextElement && !animationFrame) {
+            observer.observe(reference.contextElement);
+          }
           observer.observe(floating);
         }
         let frameId;
@@ -10050,6 +10139,7 @@ var require_floating_ui_dom_umd = __commonJS({
       exports3.autoUpdate = autoUpdate;
       exports3.computePosition = computePosition;
       exports3.getOverflowAncestors = getOverflowAncestors;
+      exports3.platform = platform;
       Object.defineProperty(exports3, "__esModule", { value: true });
     });
   }
@@ -15561,7 +15651,6 @@ var require_Slider = __commonJS({
           },
           size: sizeProp ?? context.size ?? "$4",
           onLayout: (e) => {
-            console.log("did layout");
             setSize(e.nativeEvent.layout[orientation.sizeProp]);
           },
           ...{
@@ -17094,40 +17183,33 @@ var require_Input = __commonJS({
     var import_focusable = require_cjs30();
     var import_react_native3 = require("react-native-web-lite");
     var import_inputHelpers = require_inputHelpers();
-    var InputFrame = (0, import_core2.styled)(
-      import_react_native3.TextInput,
-      {
-        name: "Input",
-        fontFamily: "$body",
-        borderWidth: 1,
-        color: "$color",
-        focusable: true,
-        borderColor: "$borderColor",
-        backgroundColor: "$background",
-        minWidth: 0,
-        hoverStyle: {
-          borderColor: "$borderColorHover"
-        },
-        focusStyle: {
-          borderColor: "$borderColorFocus",
-          borderWidth: 2,
-          marginHorizontal: -1
-        },
-        variants: {
-          size: {
-            "...size": import_inputHelpers.inputSizeVariant
-          }
-        },
-        defaultVariants: {
-          size: "$4"
+    var InputFrame = (0, import_core2.styled)(import_react_native3.TextInput, {
+      name: "Input",
+      fontFamily: "$body",
+      borderWidth: 1,
+      color: "$color",
+      focusable: true,
+      borderColor: "$borderColor",
+      backgroundColor: "$background",
+      minWidth: 0,
+      hoverStyle: {
+        borderColor: "$borderColorHover"
+      },
+      focusStyle: {
+        borderColor: "$borderColorFocus",
+        borderWidth: 2,
+        marginHorizontal: -1
+      },
+      variants: {
+        size: {
+          "...size": import_inputHelpers.inputSizeVariant
         }
       },
-      {
-        isText: true,
-        isReactNative: true
+      defaultVariants: {
+        size: "$4"
       }
-    );
-    var Input = InputFrame.extractable((0, import_focusable.focusableInputHOC)(InputFrame));
+    });
+    var Input = (0, import_focusable.focusableInputHOC)(InputFrame);
   }
 });
 
@@ -17718,7 +17800,7 @@ __export2(src_exports, {
   withStaticProperties: () => import_core.withStaticProperties
 });
 module.exports = __toCommonJS2(src_exports);
-var import_polyfills = require_polyfills();
+__reExport(src_exports, require_setup(), module.exports);
 __reExport(src_exports, require_cjs2(), module.exports);
 __reExport(src_exports, require_cjs20(), module.exports);
 __reExport(src_exports, require_cjs23(), module.exports);
