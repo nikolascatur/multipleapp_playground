@@ -2,12 +2,27 @@ import { Anchor, Button, H1, Paragraph, Separator, Sheet, XStack, YStack } from 
 import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
 import React, { useState } from 'react'
 import { useLink } from 'solito/link'
+import { useRouter } from 'solito/router'
 
 export function HomeScreen() {
   const linkProps = useLink({
     // href: '/user/nate',
-    href: '/user-list',
+    // href: '/user-list',
+    href: '/user/detail',
   })
+
+  const menuArray = [
+    {
+      link: '/user-list',
+      text: 'User List',
+    },
+    {
+      link: '/user/nate',
+      text: 'User Detail',
+    },
+  ]
+
+  const router = useRouter()
 
   return (
     <YStack f={1} jc="center" ai="center" p="$4" space>
@@ -32,8 +47,14 @@ export function HomeScreen() {
         </Paragraph>
       </YStack>
 
-      <XStack>
-        <Button {...linkProps}>Link to user</Button>
+      <XStack flexWrap="wrap">
+        {menuArray.map(({ link, text }) => {
+          return (
+            <Button marginHorizontal="10" onPress={() => router.push(link)}>
+              {text}
+            </Button>
+          )
+        })}
       </XStack>
 
       <SheetDemo />
