@@ -14,6 +14,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
               home: '',
               'user-detail': 'user/:id',
               'user-list': '',
+              'todo-xstate': '',
             },
           },
         }),

@@ -20,6 +20,10 @@ export function HomeScreen() {
       link: '/user/nate',
       text: 'User Detail',
     },
+    {
+      link: '/xstate/todo',
+      text: 'Todos Xstate Playground',
+    },
   ]
 
   const router = useRouter()

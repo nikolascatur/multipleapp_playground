@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { HomeScreen } from '../../features/home/screen'
 import { UserDetailScreen } from '../../features/user/detail-screen'
-import UserListSScreen from '../../../../apps/next/pages/user-list/[id]'
+import { ToDoScreen } from '../../features/xstate-playground/todos/todo-screen'
 
 const Stack = createNativeStackNavigator<{
   home: undefined
@@ -11,6 +11,7 @@ const Stack = createNativeStackNavigator<{
     id: string
   }
   'user-list': undefined
+  'todo-xstate': undefined
 }>()
 
 export function NativeNavigation() {
@@ -30,7 +31,13 @@ export function NativeNavigation() {
           title: 'User',
         }}
       />
-      <Stack.Screen name="user-list" component={UserListSScreen} />
+      <Stack.Screen
+        name="todo-xstate"
+        component={ToDoScreen}
+        options={{
+          title: 'Todos Playground',
+        }}
+      />
     </Stack.Navigator>
   )
 }
